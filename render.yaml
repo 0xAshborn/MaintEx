@@ -1,0 +1,54 @@
+# ====================================================================================
+# Render Blueprint - Infrastructure as Code
+# ====================================================================================
+# Deploy: Push to GitHub, then connect repo to Render Dashboard
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: cortex-api
+    runtime: docker
+    dockerfilePath: ./laravel/Dockerfile
+    dockerContext: ./laravel
+    region: oregon
+    plan: free
+    branch: main
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_NAME
+        value: CORTEX
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        fromRenderService:
+          type: web
+          name: cortex-api
+          property: url
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_USERNAME
+        value: postgres
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSLMODE
+        value: require
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: APP_KEY
+        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_DRIVER
+        value: array

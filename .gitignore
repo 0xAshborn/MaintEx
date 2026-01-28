@@ -1,0 +1,107 @@
+# ====================================================================================
+# CORTEX CMMS - Git Ignore
+# ====================================================================================
+
+# =====================
+# Environment & Secrets (CRITICAL)
+# =====================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Supabase credentials
+.env.supabase
+.env.local
+.env.production
+.env.staging
+
+# =====================
+# Laravel
+# =====================
+/laravel/vendor/
+/laravel/node_modules/
+/laravel/public/hot
+/laravel/public/storage
+/laravel/storage/*.key
+/laravel/storage/logs/*
+/laravel/.env
+/laravel/.env.*
+!/laravel/.env.example
+/laravel/bootstrap/cache/*
+!/laravel/bootstrap/cache/.gitkeep
+
+# =====================
+# Composer
+# =====================
+vendor/
+composer.lock
+
+# =====================
+# Node.js / NPM
+# =====================
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+pnpm-lock.yaml
+
+# =====================
+# IDE & Editors
+# =====================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# =====================
+# OS Generated
+# =====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# =====================
+# Logs & Cache
+# =====================
+*.log
+logs/
+cache/
+*.cache
+.phpunit.result.cache
+
+# =====================
+# Build & Compiled
+# =====================
+/dist/
+/build/
+*.min.js
+*.min.css
+
+# =====================
+# Testing
+# =====================
+/coverage/
+.phpunit.result.cache
+/laravel/.phpunit.result.cache
+
+# =====================
+# Temporary Files
+# =====================
+*.tmp
+*.temp
+*.bak
+*.backup

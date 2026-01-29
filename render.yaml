@@ -1,15 +1,12 @@
 # ====================================================================================
-# Render Blueprint - Infrastructure as Code
+# Render Blueprint - CORTEX API
 # ====================================================================================
-# Deploy: Push to GitHub, then connect repo to Render Dashboard
-# Docs: https://render.com/docs/blueprint-spec
 
 services:
   - type: web
     name: cortex-api
     runtime: docker
-    dockerfilePath: ./laravel/Dockerfile
-    dockerContext: ./laravel/
+    dockerfilePath: ./Dockerfile
     region: oregon
     plan: free
     branch: main

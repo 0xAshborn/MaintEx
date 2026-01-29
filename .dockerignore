@@ -1,0 +1,26 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# Docs
+*.md
+!README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files (don't copy to container, use Render env vars)
+.env
+.env.*
+
+# Vendor will be installed fresh in container
+laravel/vendor
+
+# Node
+node_modules

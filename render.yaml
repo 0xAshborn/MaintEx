@@ -9,7 +9,7 @@ services:
     name: cortex-api
     runtime: docker
     dockerfilePath: ./laravel/Dockerfile
-    dockerContext: ./laravel
+    dockerContext: ./laravel/
     region: oregon
     plan: free
     branch: main
@@ -20,18 +20,13 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
-      - key: APP_URL
-        fromRenderService:
-          type: web
-          name: cortex-api
-          property: url
+        value: "false"
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        sync: false
+        value: db.wxlgrpbipliyrjkqpeiv.supabase.co
       - key: DB_PORT
-        value: 5432
+        value: "5432"
       - key: DB_DATABASE
         value: postgres
       - key: DB_USERNAME
@@ -40,15 +35,11 @@ services:
         sync: false
       - key: DB_SSLMODE
         value: require
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_KEY
-        sync: false
       - key: APP_KEY
         generateValue: true
       - key: LOG_CHANNEL
         value: stderr
       - key: SESSION_DRIVER
-        value: cookie
+        value: array
       - key: CACHE_DRIVER
         value: array

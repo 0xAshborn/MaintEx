@@ -101,12 +101,12 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ===================================================================
-    // Backlog (Aging, Trends, Urgency Analysis)
+    // Backlog (Maintenance Backlog Analytics)
     // ===================================================================
     Route::prefix('backlog')->group(function () {
         Route::get('summary', [BacklogController::class, 'summary']);
         Route::get('work-orders', [BacklogController::class, 'workOrders']);
-        Route::get('pm', [BacklogController::class, 'preventiveMaintenance']);
+        Route::get('pm', [BacklogController::class, 'pmBacklog']);
         Route::get('by-priority', [BacklogController::class, 'byPriority']);
         Route::get('by-asset', [BacklogController::class, 'byAsset']);
         Route::get('aging', [BacklogController::class, 'aging']);

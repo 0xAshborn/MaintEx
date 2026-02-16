@@ -24,8 +24,8 @@ SELECT
     a.tag_number,
     a.criticality AS asset_criticality,
     l.name AS location_name,
-    req.full_name AS requested_by,
-    asn.full_name AS assigned_to,
+    TRIM(CONCAT(req.first_name, ' ', req.last_name)) AS requested_by,
+    TRIM(CONCAT(asn.first_name, ' ', asn.last_name)) AS assigned_to,
     -- Aging: days since request
     ROUND(EXTRACT(EPOCH FROM (NOW() - wo.requested_date)) / 86400, 1) AS age_days,
     -- Overdue: days past due date

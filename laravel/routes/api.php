@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AssetKpiController;
 use App\Http\Controllers\Api\WorkOrderController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CalendarController;
+use App\Http\Controllers\Api\BacklogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +98,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('pm/batch-reschedule', [CalendarController::class, 'batchReschedule']);
         Route::get('pm/unscheduled', [CalendarController::class, 'unscheduled']);
         Route::get('pm/overdue', [CalendarController::class, 'overdue']);
+    });
+
+    // ===================================================================
+    // Backlog (Aging, Trends, Urgency Analysis)
+    // ===================================================================
+    Route::prefix('backlog')->group(function () {
+        Route::get('summary', [BacklogController::class, 'summary']);
+        Route::get('work-orders', [BacklogController::class, 'workOrders']);
+        Route::get('pm', [BacklogController::class, 'preventiveMaintenance']);
+        Route::get('by-priority', [BacklogController::class, 'byPriority']);
+        Route::get('by-asset', [BacklogController::class, 'byAsset']);
+        Route::get('aging', [BacklogController::class, 'aging']);
+        Route::get('trend', [BacklogController::class, 'trend']);
     });
 
 });

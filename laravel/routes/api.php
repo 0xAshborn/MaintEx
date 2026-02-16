@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\CalendarController;
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
 });
 
 // Health check for Render

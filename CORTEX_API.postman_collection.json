@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "CORTEX CMMS API",
-    "description": "Complete API collection for CORTEX Maintenance Management System\n\nConnected to Supabase PostgreSQL",
+    "description": "Complete API collection for CORTEX Maintenance Management System (Multi-Tenant)\n\nConnected to Supabase PostgreSQL with RLS.\n\n⚠️ IMPORTANT — All login/register requests require either `subdomain` or `tenant_id` to identify the tenant. The test scripts automatically save the token and tenant_id as collection variables.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -29,6 +29,18 @@
       "key": "token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "tenant_id",
+      "value": "",
+      "type": "string",
+      "description": "Auto-set by Login / Register test scripts"
+    },
+    {
+      "key": "subdomain",
+      "value": "acme",
+      "type": "string",
+      "description": "Tenant subdomain — change to match your tenant"
     }
   ],
   "item": [
@@ -46,11 +58,15 @@
                   "    pm.response.to.have.status(201);",
                   "});",
                   "",
-                  "pm.test('Save token', function () {",
+                  "pm.test('Save token & tenant', function () {",
                   "    var response = pm.response.json();",
                   "    if (response.data && response.data.token) {",
                   "        pm.collectionVariables.set('token', response.data.token);",
                   "        console.log('Token saved from registration');",
+                  "    }",
+                  "    if (response.data && response.data.tenant) {",
+                  "        pm.collectionVariables.set('tenant_id', response.data.tenant.id);",
+                  "        console.log('Tenant ID saved: ' + response.data.tenant.id);",
                   "    }",
                   "});"
                 ],
@@ -75,7 +91,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"username\": \"jdoe\",\n    \"email\": \"jdoe@cortex.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
+              "raw": "{\n    \"subdomain\": \"{{subdomain}}\",\n    \"username\": \"jdoe\",\n    \"email\": \"jdoe@cortex.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -100,11 +116,16 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Save token', function () {",
+                  "pm.test('Save token & tenant', function () {",
                   "    var response = pm.response.json();",
                   "    if (response.data && response.data.token) {",
                   "        pm.collectionVariables.set('token', response.data.token);",
                   "        console.log('Token saved successfully');",
+                  "    }",
+                  "    if (response.data && response.data.tenant) {",
+                  "        pm.collectionVariables.set('tenant_id', response.data.tenant.id);",
+                  "        pm.collectionVariables.set('subdomain', response.data.tenant.subdomain);",
+                  "        console.log('Tenant saved: ' + response.data.tenant.subdomain);",
                   "    }",
                   "});"
                 ],
@@ -129,7 +150,64 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"admin@cortex.com\",\n    \"password\": \"password123\"\n}"
+              "raw": "{\n    \"email\": \"admin@cortex.com\",\n    \"password\": \"password123\",\n    \"subdomain\": \"{{subdomain}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login (by tenant_id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Save token & tenant', function () {",
+                  "    var response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "    }",
+                  "    if (response.data && response.data.tenant) {",
+                  "        pm.collectionVariables.set('tenant_id', response.data.tenant.id);",
+                  "        pm.collectionVariables.set('subdomain', response.data.tenant.subdomain);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@cortex.com\",\n    \"password\": \"password123\",\n    \"tenant_id\": {{tenant_id}}\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -1148,6 +1226,194 @@
                 "calendar",
                 "pm",
                 "overdue"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌐 Backlog",
+      "item": [
+        {
+          "name": "Backlog Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/backlog/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "backlog",
+                "summary"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Backlog Work Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/backlog/work-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "backlog",
+                "work-orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PM Backlog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/backlog/pm",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "backlog",
+                "pm"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Backlog by Priority",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/backlog/by-priority",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "backlog",
+                "by-priority"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Backlog by Asset",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/backlog/by-asset",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "backlog",
+                "by-asset"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Backlog Aging",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/backlog/aging",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "backlog",
+                "aging"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Backlog Trend",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/backlog/trend",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "backlog",
+                "trend"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
               ]
             }
           }

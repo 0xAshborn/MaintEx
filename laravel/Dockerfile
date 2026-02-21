@@ -58,8 +58,12 @@ COPY docker/nginx.conf /etc/nginx/sites-available/default
 # Copy supervisor config
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy startup script (runs at container start, not build time)
+COPY docker/startup.sh /startup.sh
+RUN chmod +x /startup.sh
+
 # Expose port
 EXPOSE 80
 
-# Start supervisor (manages nginx + php-fpm)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# startup.sh: clears stale caches, re-caches with live env vars, then starts supervisord
+CMD ["/startup.sh"]

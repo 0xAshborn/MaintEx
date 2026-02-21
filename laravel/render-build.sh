@@ -1,23 +1,17 @@
 #!/usr/bin/env bash
 # ====================================================================================
 # CORTEX — Render Build Script
-# Runs during the Docker BUILD phase on Render
+# Runs during the Docker BUILD phase.
+# NOTE: Do NOT run config:cache here — Render env vars are injected at runtime only.
 # ====================================================================================
 set -e
 
-echo "🚀 Starting CORTEX Render build..."
+echo "🔨 Starting CORTEX build..."
 
-# Install PHP dependencies (production only, optimized autoloader)
+# Install PHP dependencies (production, optimized autoloader)
 composer install --no-dev --optimize-autoloader
 
-# Clear any stale caches from previous builds
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-
-# Re-cache for production performance
-php artisan config:cache
-php artisan route:cache
+# Only cache views (path-based, env-independent)
 php artisan view:cache
 
-echo "✅ Build complete!"
+echo "✅ Build complete! Env-dependent caching deferred to startup.sh"

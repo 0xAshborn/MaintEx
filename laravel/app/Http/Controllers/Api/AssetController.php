@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\DowntimeEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AssetController extends Controller
 {
@@ -81,20 +82,25 @@ class AssetController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'tag_number' => 'required|string|max:100|unique:assets.registry,tag_number',
-            'serial_number' => 'nullable|string|max:100',
-            'asset_type_id' => 'required|integer|exists:assets.types,asset_type_id',
-            'location_id' => 'required|integer|exists:core.locations,location_id',
-            'status' => 'string|in:Operational,Down,Maintenance',
-            'criticality' => 'string|in:High,Medium,Low',
-            'manufacturer' => 'nullable|string|max:100',
-            'model' => 'nullable|string|max:100',
-            'install_date' => 'nullable|date',
-            'purchase_cost' => 'nullable|numeric|min:0',
-            'custom_fields' => 'nullable|array',
+            'name'          => 'required|string|max:255',
+            'tag_number'    => [
+                'required', 'string', 'max:100',
+                Rule::unique('assets.registry', 'tag_number')
+                    ->where('tenant_id', auth()->user()->tenant_id),
+            ],
+            'serial_number'  => 'nullable|string|max:100',
+            'asset_type_id'  => 'required|integer|exists:assets.types,asset_type_id',
+            'location_id'    => 'required|integer|exists:core.locations,location_id',
+            'status'         => 'string|in:Operational,Down,Maintenance',
+            'criticality'    => 'string|in:High,Medium,Low',
+            'manufacturer'   => 'nullable|string|max:100',
+            'model'          => 'nullable|string|max:100',
+            'install_date'   => 'nullable|date',
+            'purchase_cost'  => 'nullable|numeric|min:0',
+            'custom_fields'  => 'nullable|array',
         ]);
 
+        // tenant_id is auto-injected by the Asset model's creating() hook
         $asset = Asset::create($validated);
 
         return response()->json([
@@ -113,18 +119,23 @@ class AssetController extends Controller
         $asset = Asset::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'string|max:255',
-            'tag_number' => "string|max:100|unique:assets.registry,tag_number,{$id},asset_id",
-            'serial_number' => 'nullable|string|max:100',
-            'asset_type_id' => 'integer|exists:assets.types,asset_type_id',
-            'location_id' => 'integer|exists:core.locations,location_id',
-            'status' => 'string|in:Operational,Down,Maintenance',
-            'criticality' => 'string|in:High,Medium,Low',
-            'manufacturer' => 'nullable|string|max:100',
-            'model' => 'nullable|string|max:100',
-            'install_date' => 'nullable|date',
-            'purchase_cost' => 'nullable|numeric|min:0',
-            'custom_fields' => 'nullable|array',
+            'name'          => 'string|max:255',
+            'tag_number'    => [
+                'string', 'max:100',
+                Rule::unique('assets.registry', 'tag_number')
+                    ->where('tenant_id', auth()->user()->tenant_id)
+                    ->ignore($id, 'asset_id'),
+            ],
+            'serial_number'  => 'nullable|string|max:100',
+            'asset_type_id'  => 'integer|exists:assets.types,asset_type_id',
+            'location_id'    => 'integer|exists:core.locations,location_id',
+            'status'         => 'string|in:Operational,Down,Maintenance',
+            'criticality'    => 'string|in:High,Medium,Low',
+            'manufacturer'   => 'nullable|string|max:100',
+            'model'          => 'nullable|string|max:100',
+            'install_date'   => 'nullable|date',
+            'purchase_cost'  => 'nullable|numeric|min:0',
+            'custom_fields'  => 'nullable|array',
         ]);
 
         $asset->update($validated);
@@ -168,8 +179,9 @@ class AssetController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $validated['asset_id'] = $id;
+        $validated['asset_id']  = $id;
         $validated['created_by'] = auth()->id();
+        $validated['tenant_id']  = auth()->user()->tenant_id;
 
         $downtime = DowntimeEvent::create($validated);
 

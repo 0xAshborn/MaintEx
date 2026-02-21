@@ -34,7 +34,7 @@ Route::get('health', fn() => response()->json(['status' => 'ok', 'timestamp' => 
 // Protected Routes (Require Authentication)
 // =======================================================================
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
 
     // ===================================================================
     // Auth

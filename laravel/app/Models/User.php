@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +21,7 @@ class User extends Authenticatable
     public $timestamps = false;
 
     protected $fillable = [
+        'tenant_id',
         'username',
         'email',
         'password_hash',
@@ -34,18 +36,38 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'  => 'boolean',
         'last_login' => 'datetime',
         'created_at' => 'datetime',
     ];
 
-    // Laravel expects 'password' but we use 'password_hash'
+    /**
+     * Boot: apply TenantScope to all queries automatically.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope());
+
+        // Auto-inject tenant_id on create
+        static::creating(function (self $user) {
+            if (empty($user->tenant_id) && auth()->check()) {
+                $user->tenant_id = auth()->user()->tenant_id;
+            }
+        });
+    }
+
+    // Laravel password accessor
     public function getAuthPassword()
     {
         return $this->password_hash;
     }
 
     // Relationships
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'tenant_id');
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id', 'role_id');

@@ -1,20 +1,23 @@
-# Render Build Script for Laravel
-# This script runs during the build phase on Render
-
 #!/usr/bin/env bash
+# ====================================================================================
+# CORTEX — Render Build Script
+# Runs during the Docker BUILD phase on Render
+# ====================================================================================
 set -e
 
-echo "🚀 Starting Render build..."
+echo "🚀 Starting CORTEX Render build..."
 
-# Install PHP dependencies
+# Install PHP dependencies (production only, optimized autoloader)
 composer install --no-dev --optimize-autoloader
 
-# Clear and cache config
+# Clear any stale caches from previous builds
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# Re-cache for production performance
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
-# Run migrations (optional - uncomment if needed)
-# php artisan migrate --force
 
 echo "✅ Build complete!"

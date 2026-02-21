@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,7 @@ class WorkOrder extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'tenant_id',
         'title',
         'description',
         'type',
@@ -35,16 +37,32 @@ class WorkOrder extends Model
     ];
 
     protected $casts = [
-        'requested_date' => 'datetime',
-        'due_date' => 'datetime',
-        'start_time' => 'datetime',
+        'requested_date'  => 'datetime',
+        'due_date'        => 'datetime',
+        'start_time'      => 'datetime',
         'completion_time' => 'datetime',
-        'labor_cost' => 'decimal:2',
-        'material_cost' => 'decimal:2',
-        'total_cost' => 'decimal:2',
+        'labor_cost'      => 'decimal:2',
+        'material_cost'   => 'decimal:2',
+        'total_cost'      => 'decimal:2',
     ];
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope());
+
+        static::creating(function (self $model) {
+            if (empty($model->tenant_id) && auth()->check()) {
+                $model->tenant_id = auth()->user()->tenant_id;
+            }
+        });
+    }
+
     // Relationships
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'tenant_id');
+    }
+
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class, 'asset_id', 'asset_id');

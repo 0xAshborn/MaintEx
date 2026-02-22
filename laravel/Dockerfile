@@ -30,7 +30,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 # Copy application files
-COPY . .
+# Handle both Vulcan root context (Railway) and laravel/ context
+COPY . /tmp/src
+RUN if [ -d "/tmp/src/laravel" ]; then \
+    cp -a /tmp/src/laravel/. /var/www/html/; \
+    else \
+    cp -a /tmp/src/. /var/www/html/; \
+    fi \
+    && rm -rf /tmp/src
 
 # Create required directories BEFORE composer install
 RUN mkdir -p /var/www/html/bootstrap/cache \

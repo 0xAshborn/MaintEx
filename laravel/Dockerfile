@@ -58,9 +58,17 @@ COPY docker/nginx.conf /etc/nginx/sites-available/default
 # Copy supervisor config
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy startup script (runs at container start, not build time)
-COPY docker/startup.sh /startup.sh
-RUN chmod +x /startup.sh
+# Create startup script directly in the image to avoid missing file errors
+RUN echo '#!/usr/bin/env bash' > /startup.sh && \
+    echo 'echo "Starting CORTEX API..."' >> /startup.sh && \
+    echo 'php artisan config:clear 2>/dev/null || true' >> /startup.sh && \
+    echo 'php artisan route:clear 2>/dev/null || true' >> /startup.sh && \
+    echo 'php artisan view:clear 2>/dev/null || true' >> /startup.sh && \
+    echo 'php artisan config:cache || echo "config:cache failed"' >> /startup.sh && \
+    echo 'php artisan route:cache || echo "route:cache failed"' >> /startup.sh && \
+    echo 'php artisan view:cache || echo "view:cache failed"' >> /startup.sh && \
+    echo 'exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /startup.sh && \
+    chmod +x /startup.sh
 
 # Expose port
 EXPOSE 80

@@ -2,23 +2,23 @@
 # ====================================================================================
 # CORTEX — Docker Entrypoint / Startup Script
 # Runs at CONTAINER START (not build time), so env vars are available.
+# NOTE: Do NOT use set -e here — artisan failures must not abort supervisord startup.
 # ====================================================================================
-set -e
 
 echo "🚀 Starting CORTEX API..."
 
-# Clear any stale cached config/routes that were baked into the image
-# (Render env vars are only injected at runtime, not build time)
-php artisan config:clear  2>/dev/null || true
-php artisan route:clear   2>/dev/null || true
-php artisan view:clear    2>/dev/null || true
+# ── 1. Clear any stale caches from the Docker image ──────────────────────────────────
+echo "📦 Clearing stale caches..."
+php artisan config:clear  2>/dev/null || echo "  config:clear skipped"
+php artisan route:clear   2>/dev/null || echo "  route:clear skipped"
+php artisan view:clear    2>/dev/null || echo "  view:clear skipped"
 
-# Re-cache with live env vars
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# ── 2. Re-cache for production ────────────────────────────────────────────────────────
+echo "⚡ Re-caching with live env vars..."
+php artisan config:cache  && echo "  ✅ config:cache OK"  || echo "  ⚠️  config:cache FAILED — running uncached"
+php artisan route:cache   && echo "  ✅ route:cache OK"   || echo "  ⚠️  route:cache FAILED — running uncached"
+php artisan view:cache    && echo "  ✅ view:cache OK"    || echo "  ⚠️  view:cache FAILED — running uncached"
 
-echo "✅ Cache warmed. Handing off to supervisord..."
-
-# Start supervisord (nginx + php-fpm)
+# ── 3. Always start supervisord (nginx + php-fpm) ────────────────────────────────────
+echo "✅ Handing off to supervisord..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

@@ -426,13 +426,13 @@ CREATE TABLE IF NOT EXISTS analytics.audit_logs (
 
 -- core
 CREATE INDEX IF NOT EXISTS idx_users_tenant           ON core.users(tenant_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_tenant_email ON core.users(tenant_id, email);
+-- NOTE: idx_users_tenant_email removed — UNIQUE(tenant_id, email) in table DDL already creates this index
 CREATE INDEX IF NOT EXISTS idx_users_tenant_role      ON core.users(tenant_id, role_id);
 CREATE INDEX IF NOT EXISTS idx_roles_tenant           ON core.roles(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_locations_tenant       ON core.locations(tenant_id);
 
 -- assets
-CREATE UNIQUE INDEX IF NOT EXISTS idx_asset_tenant_tag    ON assets.registry(tenant_id, tag_number);
+-- NOTE: idx_asset_tenant_tag removed — UNIQUE(tenant_id, tag_number) in table DDL already creates this index
 CREATE INDEX IF NOT EXISTS idx_asset_tenant_status        ON assets.registry(tenant_id, status);
 CREATE INDEX IF NOT EXISTS idx_asset_tenant_location      ON assets.registry(tenant_id, location_id);
 CREATE INDEX IF NOT EXISTS idx_asset_tenant_type          ON assets.registry(tenant_id, asset_type_id);
@@ -448,7 +448,7 @@ CREATE INDEX IF NOT EXISTS idx_checklists_tenant          ON catalog.checklists(
 CREATE INDEX IF NOT EXISTS idx_checklist_items_tenant     ON catalog.checklist_items(tenant_id);
 
 -- inventory
-CREATE UNIQUE INDEX IF NOT EXISTS idx_parts_tenant_sku    ON inventory.parts(tenant_id, sku);
+-- NOTE: idx_parts_tenant_sku removed — UNIQUE(tenant_id, sku) in table DDL already creates this index
 CREATE INDEX IF NOT EXISTS idx_stock_tenant_part          ON inventory.stock(tenant_id, part_id);
 CREATE INDEX IF NOT EXISTS idx_stock_tenant_storeroom     ON inventory.stock(tenant_id, storeroom_id);
 CREATE INDEX IF NOT EXISTS idx_trans_tenant_stock         ON inventory.transactions(tenant_id, stock_id);
@@ -477,7 +477,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_tenant_time          ON analytics.audit_log
 
 -- ─── Session helper ──────────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION core.current_tenant_id()
-RETURNS BIGINT LANGUAGE sql STABLE AS $$
+RETURNS BIGINT LANGUAGE sql STABLE
+SET search_path = core, public
+AS $$
     SELECT NULLIF(current_setting('app.current_tenant', TRUE), '')::BIGINT;
 $$;
 
@@ -830,7 +832,8 @@ BEGIN
     FROM assets.registry a CROSS JOIN ph LEFT JOIN pd ON a.asset_id = pd.asset_id
     WHERE a.asset_id = p_asset_id;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = analytics, assets, maintenance, core, public;
 
 CREATE OR REPLACE FUNCTION analytics.get_backlog_trend(
     p_start_date DATE DEFAULT CURRENT_DATE - INTERVAL '30 days',
@@ -847,7 +850,8 @@ BEGIN
     FROM generate_series(p_start_date, p_end_date, '1 day'::interval) d(dt)
     ORDER BY d.dt;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = analytics, maintenance, public;
 
 -- ####################################################################################
 -- STEP 10: ROW-LEVEL SECURITY
@@ -952,7 +956,9 @@ CREATE OR REPLACE FUNCTION core.provision_tenant(
     p_subdomain    VARCHAR(100),
     p_plan         VARCHAR(50) DEFAULT 'Starter'
 )
-RETURNS BIGINT LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS BIGINT LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = core, public
+AS $$
 DECLARE v_id BIGINT;
 BEGIN
     INSERT INTO core.tenants (company_name, subdomain, plan)

@@ -105,3 +105,18 @@ cache/
 *.temp
 *.bak
 *.backup
+
+# =====================
+# Secrets & Helper Scripts (NEVER commit)
+# =====================
+dburl.txt
+fix-env.mjs
+set-db-url.mjs
+set-env-api.mjs
+update-db-url.mjs
+test-db.js
+test-auth.mjs
+test-all.mjs
+DEPLOY.md
+*.env.vercel.local
+*.env.pulled

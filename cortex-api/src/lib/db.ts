@@ -1,12 +1,14 @@
 import { Pool } from 'pg';
 
-if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is missing.');
-}
+// Only throw if we are actually trying to connect without a URL at runtime,
+// not during the Vercel static build process.
+const connectionString = process.env.DATABASE_URL;
 
 export const db = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // Supabase requires SSL but usually self-signed root
-    }
+    connectionString: connectionString,
+    ssl: connectionString ? { rejectUnauthorized: false } : undefined
+});
+
+db.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
 });

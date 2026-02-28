@@ -5,18 +5,31 @@ import { signToken } from '@/lib/jwt';
 
 export async function POST(req: Request) {
     try {
-        const { email, password, subdomain } = await req.json();
+        const { email, password, subdomain, tenant_id } = await req.json();
 
-        if (!email || !password || !subdomain) {
-            return NextResponse.json({ error: 'Email, password, and subdomain are required' }, { status: 400 });
+        if (!email || !password) {
+            return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+        }
+        if (!subdomain && !tenant_id) {
+            return NextResponse.json({ error: 'Either subdomain or tenant_id is required' }, { status: 400 });
         }
 
-        // 1. Get tenant by subdomain to ensure contextual login
-        const tenantRes = await db.query('SELECT tenant_id FROM core.tenants WHERE subdomain = $1', [subdomain]);
-        if (tenantRes.rowCount === null || tenantRes.rowCount === 0) {
-            return NextResponse.json({ error: 'Invalid subdomain' }, { status: 404 });
+        // 1. Resolve tenant — by subdomain or by tenant_id
+        let tenantId: number;
+        if (subdomain) {
+            const tenantRes = await db.query('SELECT tenant_id FROM core.tenants WHERE subdomain = $1', [subdomain]);
+            if (tenantRes.rowCount === null || tenantRes.rowCount === 0) {
+                return NextResponse.json({ error: 'Invalid subdomain' }, { status: 404 });
+            }
+            tenantId = tenantRes.rows[0].tenant_id;
+        } else {
+            const tenantRes = await db.query('SELECT tenant_id FROM core.tenants WHERE tenant_id = $1', [tenant_id]);
+            if (tenantRes.rowCount === null || tenantRes.rowCount === 0) {
+                return NextResponse.json({ error: 'Invalid tenant_id' }, { status: 404 });
+            }
+            tenantId = tenantRes.rows[0].tenant_id;
         }
-        const tenantId = tenantRes.rows[0].tenant_id;
+
 
         // 2. Fetch User strictly scoped to this tenant
         const userRes = await db.query('SELECT * FROM core.users WHERE email = $1 AND tenant_id = $2', [email, tenantId]);

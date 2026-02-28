@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "CORTEX CMMS API",
-    "description": "Complete API collection for CORTEX Maintenance Management System (Multi-Tenant)\n\nConnected to Supabase PostgreSQL with RLS.\n\n⚠️ IMPORTANT — All login/register requests require either `subdomain` or `tenant_id` to identify the tenant. The test scripts automatically save the token and tenant_id as collection variables.",
+    "description": "Complete API collection for CORTEX Maintenance Management System (Multi-Tenant)\n\nDeployed on Vercel Serverless Functions with Supabase PostgreSQL.\n\n⚠️ IMPORTANT — All login/register requests require either `subdomain` or `tenant_id` to identify the tenant. The test scripts automatically save the token and tenant_id as collection variables.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -17,12 +17,12 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "https://cortex-api.onrender.com/api",
+      "value": "https://cortex-api-swart.vercel.app/api",
       "type": "string"
     },
     {
       "key": "local_url",
-      "value": "http://localhost:8000/api",
+      "value": "http://localhost:3000/api",
       "type": "string"
     },
     {
@@ -38,7 +38,7 @@
     },
     {
       "key": "subdomain",
-      "value": "acme",
+      "value": "beta",
       "type": "string",
       "description": "Tenant subdomain — change to match your tenant"
     }
@@ -60,13 +60,13 @@
                   "",
                   "pm.test('Save token & tenant', function () {",
                   "    var response = pm.response.json();",
-                  "    if (response.data && response.data.token) {",
-                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('token', response.token);",
                   "        console.log('Token saved from registration');",
                   "    }",
-                  "    if (response.data && response.data.tenant) {",
-                  "        pm.collectionVariables.set('tenant_id', response.data.tenant.id);",
-                  "        console.log('Tenant ID saved: ' + response.data.tenant.id);",
+                  "    if (response.user && response.user.tenantId) {",
+                  "        pm.collectionVariables.set('tenant_id', response.user.tenantId);",
+                  "        console.log('Tenant ID saved: ' + response.user.tenantId);",
                   "    }",
                   "});"
                 ],
@@ -91,7 +91,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"subdomain\": \"{{subdomain}}\",\n    \"username\": \"jdoe\",\n    \"email\": \"jdoe@cortex.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
+              "raw": "{\n    \"companyName\": \"Acme Corp\",\n    \"subdomain\": \"acme\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"jdoe@acme.com\",\n    \"password\": \"password123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -106,7 +106,7 @@
           }
         },
         {
-          "name": "Login",
+          "name": "Login (by subdomain)",
           "event": [
             {
               "listen": "test",
@@ -118,14 +118,13 @@
                   "",
                   "pm.test('Save token & tenant', function () {",
                   "    var response = pm.response.json();",
-                  "    if (response.data && response.data.token) {",
-                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('token', response.token);",
                   "        console.log('Token saved successfully');",
                   "    }",
-                  "    if (response.data && response.data.tenant) {",
-                  "        pm.collectionVariables.set('tenant_id', response.data.tenant.id);",
-                  "        pm.collectionVariables.set('subdomain', response.data.tenant.subdomain);",
-                  "        console.log('Tenant saved: ' + response.data.tenant.subdomain);",
+                  "    if (response.user && response.user.tenantId) {",
+                  "        pm.collectionVariables.set('tenant_id', response.user.tenantId);",
+                  "        console.log('Tenant saved: ' + response.user.tenantId);",
                   "    }",
                   "});"
                 ],
@@ -150,7 +149,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"admin@cortex.com\",\n    \"password\": \"password123\",\n    \"subdomain\": \"{{subdomain}}\"\n}"
+              "raw": "{\n    \"email\": \"maria@beta.com\",\n    \"password\": \"securepassword123\",\n    \"subdomain\": \"{{subdomain}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -177,12 +176,11 @@
                   "",
                   "pm.test('Save token & tenant', function () {",
                   "    var response = pm.response.json();",
-                  "    if (response.data && response.data.token) {",
-                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('token', response.token);",
                   "    }",
-                  "    if (response.data && response.data.tenant) {",
-                  "        pm.collectionVariables.set('tenant_id', response.data.tenant.id);",
-                  "        pm.collectionVariables.set('subdomain', response.data.tenant.subdomain);",
+                  "    if (response.user && response.user.tenantId) {",
+                  "        pm.collectionVariables.set('tenant_id', response.user.tenantId);",
                   "    }",
                   "});"
                 ],
@@ -207,7 +205,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"admin@cortex.com\",\n    \"password\": \"password123\",\n    \"tenant_id\": {{tenant_id}}\n}"
+              "raw": "{\n    \"email\": \"maria@beta.com\",\n    \"password\": \"securepassword123\",\n    \"tenant_id\": {{tenant_id}}\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -319,33 +317,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/assets?per_page=20",
+              "raw": "{{base_url}}/assets",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "assets"
-              ],
-              "query": [
-                {
-                  "key": "per_page",
-                  "value": "20"
-                },
-                {
-                  "key": "status",
-                  "value": "Operational",
-                  "disabled": true
-                },
-                {
-                  "key": "criticality",
-                  "value": "High",
-                  "disabled": true
-                },
-                {
-                  "key": "search",
-                  "value": "pump",
-                  "disabled": true
-                }
               ]
             }
           }
@@ -388,7 +365,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Compresor Industrial #5\",\n    \"tag_number\": \"COMP-005\",\n    \"serial_number\": \"SN-2024-0005\",\n    \"asset_type_id\": 1,\n    \"location_id\": 1,\n    \"status\": \"Operational\",\n    \"criticality\": \"High\",\n    \"manufacturer\": \"Atlas Copco\",\n    \"model\": \"GA 55\",\n    \"install_date\": \"2024-01-15\",\n    \"purchase_cost\": 45000.00,\n    \"custom_fields\": {\n        \"pressure_rating\": \"10 bar\",\n        \"motor_power\": \"55 kW\"\n    }\n}"
+              "raw": "{\n    \"name\": \"Compresor Industrial #5\",\n    \"tagNumber\": \"COMP-005\",\n    \"serialNumber\": \"SN-2024-0005\",\n    \"assetTypeId\": 1,\n    \"locationId\": 1,\n    \"status\": \"Operational\",\n    \"criticality\": \"High\",\n    \"manufacturer\": \"Atlas Copco\",\n    \"model\": \"GA 55\",\n    \"installDate\": \"2024-01-15\",\n    \"purchaseCost\": 45000.00,\n    \"customFields\": {\n        \"pressure_rating\": \"10 bar\",\n        \"motor_power\": \"55 kW\"\n    }\n}"
             },
             "url": {
               "raw": "{{base_url}}/assets",
@@ -614,6 +591,18 @@
                 "assets",
                 "1",
                 "availability"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01",
+                  "disabled": true
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-12-31",
+                  "disabled": true
+                }
               ]
             }
           }
@@ -700,7 +689,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/work-orders?per_page=20",
+              "raw": "{{base_url}}/work-orders",
               "host": [
                 "{{base_url}}"
               ],
@@ -708,10 +697,6 @@
                 "work-orders"
               ],
               "query": [
-                {
-                  "key": "per_page",
-                  "value": "20"
-                },
                 {
                   "key": "status",
                   "value": "Open",
@@ -725,16 +710,6 @@
                 {
                   "key": "type",
                   "value": "Corrective",
-                  "disabled": true
-                },
-                {
-                  "key": "open",
-                  "value": "true",
-                  "disabled": true
-                },
-                {
-                  "key": "overdue",
-                  "value": "true",
                   "disabled": true
                 }
               ]
@@ -779,7 +754,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Replace worn bearings\",\n    \"description\": \"Bearings on main shaft showing signs of wear. Replace before failure.\",\n    \"type\": \"Corrective\",\n    \"asset_id\": 1,\n    \"location_id\": 1,\n    \"priority\": \"High\",\n    \"status\": \"Open\",\n    \"due_date\": \"2024-12-25T17:00:00Z\"\n}"
+              "raw": "{\n    \"title\": \"Replace worn bearings\",\n    \"description\": \"Bearings on main shaft showing signs of wear. Replace before failure.\",\n    \"type\": \"Corrective\",\n    \"asset_id\": 1,\n    \"location_id\": 1,\n    \"priority\": \"High\",\n    \"status\": \"Open\",\n    \"due_date\": \"2026-03-25T17:00:00Z\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/work-orders",
@@ -901,155 +876,6 @@
       ]
     },
     {
-      "name": "📈 KPI Dashboard",
-      "item": [
-        {
-          "name": "Fleet Summary",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/kpis/summary",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "kpis",
-                "summary"
-              ]
-            }
-          }
-        },
-        {
-          "name": "All Assets KPIs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/kpis/all?per_page=20",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "kpis",
-                "all"
-              ],
-              "query": [
-                {
-                  "key": "per_page",
-                  "value": "20"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Critical Assets",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/kpis/critical",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "kpis",
-                "critical"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Top Performers",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/kpis/top-performers?limit=10",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "kpis",
-                "top-performers"
-              ],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "KPIs by Asset Type",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/kpis/by-type",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "kpis",
-                "by-type"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Assets Needing Attention",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/kpis/attention-needed",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "kpis",
-                "attention-needed"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "📅 Calendar",
       "item": [
         {
@@ -1063,26 +889,25 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/calendar/events?start=2024-12-01&end=2025-01-31",
+              "raw": "{{base_url}}/calendar?start=2026-01-01&end=2026-12-31",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "calendar",
-                "events"
+                "calendar"
               ],
               "query": [
                 {
                   "key": "start",
-                  "value": "2024-12-01"
+                  "value": "2026-01-01"
                 },
                 {
                   "key": "end",
-                  "value": "2025-01-31"
+                  "value": "2026-12-31"
                 },
                 {
-                  "key": "type",
-                  "value": "pm",
+                  "key": "status",
+                  "value": "Open",
                   "disabled": true
                 }
               ]
@@ -1090,39 +915,7 @@
           }
         },
         {
-          "name": "Get PM Schedules",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/calendar/pm?start=2024-12-01&end=2025-03-31",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "calendar",
-                "pm"
-              ],
-              "query": [
-                {
-                  "key": "start",
-                  "value": "2024-12-01"
-                },
-                {
-                  "key": "end",
-                  "value": "2025-03-31"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Reschedule PM (Drag & Drop)",
+          "name": "Reschedule WO (Drag & Drop)",
           "request": {
             "method": "PUT",
             "header": [
@@ -1137,55 +930,26 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"new_date\": \"2024-12-28\"\n}"
+              "raw": "{\n    \"woId\": 1,\n    \"dueDate\": \"2026-03-28T10:00:00Z\",\n    \"startTime\": \"2026-03-28T08:00:00Z\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/calendar/pm/1/reschedule",
+              "raw": "{{base_url}}/calendar",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "calendar",
-                "pm",
-                "1",
-                "reschedule"
+                "calendar"
               ]
             }
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "📈 KPI Dashboard",
+      "item": [
         {
-          "name": "Batch Reschedule PMs",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"changes\": [\n        { \"pm_id\": 1, \"new_date\": \"2024-12-28\" },\n        { \"pm_id\": 2, \"new_date\": \"2024-12-30\" }\n    ]\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/calendar/pm/batch-reschedule",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "calendar",
-                "pm",
-                "batch-reschedule"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Unscheduled PMs",
+          "name": "Fleet Summary",
           "request": {
             "method": "GET",
             "header": [
@@ -1195,37 +959,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/calendar/pm/unscheduled",
+              "raw": "{{base_url}}/backlog/summary",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "calendar",
-                "pm",
-                "unscheduled"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Overdue PMs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/calendar/pm/overdue",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "calendar",
-                "pm",
-                "overdue"
+                "backlog",
+                "summary"
               ]
             }
           }
@@ -1385,6 +1125,123 @@
               "path": [
                 "backlog",
                 "trend"
+              ],
+              "query": [
+                {
+                  "key": "weeks",
+                  "value": "12",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📍 Locations",
+      "item": [
+        {
+          "name": "List Locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Building A - Floor 2\",\n    \"type\": \"Zone\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "locations"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Asset Types",
+      "item": [
+        {
+          "name": "List Asset Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/asset-types",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "asset-types"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Asset Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Compressor\",\n    \"description\": \"Industrial air compressor\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/asset-types",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "asset-types"
               ]
             }
           }
